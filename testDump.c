@@ -7,11 +7,11 @@ main(int argc, char **argv)
 {
     // int* test1 = malloc(sizeof(int) * 5);
     // int* test2 = malloc(sizeof(int) * 5);
-    //int* frames = malloc(sizeof(int) * 20);
-    //int* pids = malloc(sizeof(int) * 20);
+    int* frames = malloc(sizeof(int) * 20);
+    int* pids = malloc(sizeof(int) * 20);
     
-    int frames[20];
-    int pids[20];
+//    int frames[20];
+//    int pids[20];
     // frames[0] = 15;
     // pids[0] = 15;
     int numframes = 20;
@@ -25,7 +25,7 @@ main(int argc, char **argv)
         for (int i = 0; i < numframes; ++i) {
 	        printf(1, "frames[%d] = %d; pids[%d] = %d\n", i, *(frames+i), i, *(pids+i));
         }
-        printf(1, "numframes: %d\n", numframes);
+        // printf(1, "numframes: %d\n", numframes);
         wait();
     }
     else {

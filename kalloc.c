@@ -13,6 +13,7 @@ int frames[16384];
 int pids[16384];
 int count = 0;
 int init2Done = 0;
+int curPID = 0;
 
 void freerange(void *vstart, void *vend);
 extern char end[]; // first address after kernel loaded from ELF file
@@ -58,7 +59,6 @@ freerange(void *vstart, void *vend)
 {
   char *p;
   p = (char*)PGROUNDUP((uint)vstart);
-  cprintf("%x\n", p);
   for(; p + PGSIZE <= (char*)vend; p += PGSIZE*2) // free every OTHER page
     kfree(p);
 }
@@ -93,13 +93,24 @@ kfree(char *v)
 char*
 kalloc(void)
 {
+  // PARAM CHANGE: track pid of process calling kalloc
   struct run *r;
-
+//  char* v;
   if(kmem.use_lock)
     acquire(&kmem.lock);
-  r = kmem.freelist;
-  frames[count] = ((V2P(r)) & ~0xFFFF) >> 12; // virtual >> physical and mask
+  r = kmem.freelist;  // save next free frame in memory
+
+  // // create the free frame
+  // if (pid == 0 || (pid != -1 && pid != curPID)) { 
+  //   v = (char*)PGROUNDUP((uint)&frames[count]);
+  //   // should free frame we just made
+  //   kfree(v);  // FIXME: lmao does this work
+  //   curPID = pid;
+  // }
+
   if (init2Done) {
+    frames[count] = ((V2P(r)) & ~0xFFF) >> 12; // virtual >> physical and mask
+    // cprintf("%d\n", frames[count]);
     count++;
   }
   // return the first free page available in the free list
@@ -119,6 +130,7 @@ dump_physmem(int* frame, int* pid, int numframes)
   //  int frames[16384];
   //  int pids[16384];
   for (int i = 0; i < numframes; ++i) {
+    //cprintf("%d\n", frames[i]);
     *(frame + i) = frames[i];
     *(pid + i) = pids[i];
     // set all pids without pids to -2
