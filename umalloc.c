@@ -2,6 +2,8 @@
 #include "stat.h"
 #include "user.h"
 #include "param.h"
+// #include "proc.h" // CAN I JUST IMPORT AND IT'LL WORK????
+// #include "proc.c"
 
 // Memory allocator by Kernighan and Ritchie,
 // The C programming Language, 2nd ed.  Section 8.7.
@@ -51,6 +53,7 @@ morecore(uint nu)
 
   if(nu < 4096)
     nu = 4096;
+  // p = sbrk(myproc()->pid, nu * sizeof(Header)); // DOES THIS WORK?????
   p = sbrk(nu * sizeof(Header));
   if(p == (char*)-1)
     return 0;

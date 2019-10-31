@@ -59,7 +59,9 @@ freerange(void *vstart, void *vend)
 {
   char *p;
   p = (char*)PGROUNDUP((uint)vstart);
-  for(; p + PGSIZE <= (char*)vend; p += PGSIZE*2) // free every OTHER page
+  // for(; p + PGSIZE <= (char*)vend; p += PGSIZE*2) // free every OTHER page
+  //   kfree(p);
+  for(; p + PGSIZE <= (char*)vend; p += PGSIZE) // free every OTHER page
     kfree(p);
 }
 // Free the page of physical memory pointed at by v,
@@ -91,7 +93,7 @@ kfree(char *v)
 // Returns a pointer that the kernel can use.
 // Returns 0 if the memory cannot be allocated.
 char*
-kalloc(int pid)
+kalloc(int pid) // care about process id
 {
   // PARAM CHANGE: track pid of process calling kalloc
   struct run *r;
@@ -99,16 +101,24 @@ kalloc(int pid)
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = kmem.freelist;  // save next free frame in memory
-
-  // create the free frame
-  if (pid == 0 || (pid != -1 && pid != curPID)) { 
-    v = (char*)PGROUNDUP((uint)(&frames[count]));
-    // should free frame we just made
-    kfree(v);  // FIXME: lmao does this work
-    curPID = pid;
-  }
+  
+  // store frame number and pid
 
   if (init2Done) {
+    // different process call
+    if (pid != 0 && pid != curPID) {
+      // v = (char*)PGROUNDUP((uint)(&frames[count]));
+      // // should free frame we just made
+      // kfree(v);  // FIXME: lmao does this work
+
+      count++;  // leave a free frame
+      pids[count] = pid;
+      curPID = pid; // track current pid
+    }
+    else if (pid == -1) { // UNKNOWN process
+      pids[count] = -2;
+    }
+
     frames[count] = ((V2P(r)) & ~0xFFF) >> 12; // virtual >> physical and mask
     // cprintf("%d\n", frames[count]);
     count++;
