@@ -91,22 +91,22 @@ kfree(char *v)
 // Returns a pointer that the kernel can use.
 // Returns 0 if the memory cannot be allocated.
 char*
-kalloc(void)
+kalloc(int pid)
 {
   // PARAM CHANGE: track pid of process calling kalloc
   struct run *r;
-//  char* v;
+  char* v;
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = kmem.freelist;  // save next free frame in memory
 
-  // // create the free frame
-  // if (pid == 0 || (pid != -1 && pid != curPID)) { 
-  //   v = (char*)PGROUNDUP((uint)&frames[count]);
-  //   // should free frame we just made
-  //   kfree(v);  // FIXME: lmao does this work
-  //   curPID = pid;
-  // }
+  // create the free frame
+  if (pid == 0 || (pid != -1 && pid != curPID)) { 
+    v = (char*)PGROUNDUP((uint)(&frames[count]));
+    // should free frame we just made
+    kfree(v);  // FIXME: lmao does this work
+    curPID = pid;
+  }
 
   if (init2Done) {
     frames[count] = ((V2P(r)) & ~0xFFF) >> 12; // virtual >> physical and mask
